@@ -4,7 +4,7 @@ const getProdutos = async (req, res) => {
 	try {
 		const [resultado] = await db.query("SELECT id, nome, descricao, valor FROM produto where ativo = 1");
 
-		if (resultado.length === 0) {
+		if(resultado.length === 0) {
 			return res.status(404).json({ message: "Nenhum produto encontrado" });
 		}
 		return res.status(200).json({ message: "Produtos encontrados", data: resultado });
@@ -13,49 +13,48 @@ const getProdutos = async (req, res) => {
 	}
 };
 
+//criar funçção editar
 const editarProduto = async (req, res) => {
 	try {
-		const nomeProduto = req.body.nome;
-		const descricao = req.body.descricao;
-		const valor = req.body.valor;
-		const id = req.params.id;
-		const [resultado] = await db.query("UPDATE produto SET nome = ?, descricao = ?, valor = ?, WHERE id = ?", [nomeProduto, descricao, valor]);
-		if (resultado.affectedRows === 0)
-			res.status(400).json({ message: "Produto não encontrado" })
+		const [resultado] = await db.query("UPDATE produto SET nome = ?, descricao = ?, valor = ? WHERE id = ?", [req.body.nome, req.body.descricao, req.body.valor, req.params.id]);
 
-		return res.status(200).json({ message: "Produto Atualizado com sucesso." })
+		if (resultado.affectedRows === 0) {  
+			return res.status(404).json({ message: "Produto não encontrado" });  
+		}
+		return res.status(200).json({ message: "Produto editado com sucesso", data: resultado });
 	} catch (error) {
-		res.status(400).json({ message: "Erro ao editar produto.", error: error.message })
+		return res.status(500).json({ message: "Erro ao editar produto", error: error.message });
 	}
 }
 
-const excluirProduto = async (req, res) => {
+//criar função deletar
+const deletarProduto = async (req, res) => {
 	try {
-		const id = req.params.id
+		// const [resultado] = await db.query("UPDATE produto SET ativo = 0 WHERE id = ?", [req.params.id]);
+		const [resultado] = await db.query("DELETE FROM produto WHERE id = ?", [req.params.id]);
 
-		const [resultado] = await db.query("DELETE FROM produto WHERE id = ?", [id])
-		if (resultado.affectedRows === 0)
-			res.status(400).json({ message: "Produto não encontrado" })
-
-		return res.status(200).json({ message: "Produto deletado com sucesso." })
+		if (resultado.affectedRows === 0) {  
+			return res.status(404).json({ message: "Produto não encontrado" });  
+		}
+		return res.status(200).json({ message: "Produto deletado com sucesso", data: resultado });
 	} catch (error) {
-		return res.status(400).json({ message: "Erro ao deletar produto.", error: error.message })
+		return res.status(500).json({ message: "Erro ao deletar produto", error: error.message });
 	}
 }
 
+// criar funcao adicionar
 const adicionarProduto = async (req, res) => {
-	const nome = req.body.nome
-	const descricao = req.body.descricao
-	const valor = req.body.valor
-	try {
-		const [resultado] = await db.query("INSERT INTO produto (nome, descricao, valor) VALUES (?, ?, ?)", [nome, valor, descricao])
-		if (resultado.affectedRows === 0)
-			res.status(400).json({ message: "Produto não foi criado" })
+    try {
+		const [resultado] = await db.query("INSERT INTO produto (nome, descricao, valor) VALUES (?, ?, ?)", [req.body.nome, req.body.descricao, req.body.valor]);
 
-		return res.status(201).json({ message: "Produto criado com sucesso." })
+		if(resultado.affectedRows === 0) {
+			return res.status(404).json({ message: "Nenhum produto adicionado" });
+		}
+
+		return res.status(201).json({ message: "Produto adicionado com sucesso", data: resultado });
 	} catch (error) {
-		return res.status(400).json({ message: "Erro ao criar produto.", error: error.message })
+		return res.status(500).json({ message: "Erro ao adicionar produto", error: error.message });
 	}
 }
 
-export { getProdutos, editarProduto, excluirProduto, adicionarProduto };
+export { getProdutos, editarProduto, deletarProduto, adicionarProduto };

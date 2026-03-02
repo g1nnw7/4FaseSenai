@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Usuario {
+  id    Int    @id @default(autoincrement())
+  nome  String
+  email String @unique
+  senha String
+  pranchas Pranchas[]
+
+  @@map("usuario")
+}
+
+model Pranchas {
+  id Int @id @default(autoincrement())
+  marca String
+  modelo String
+  categoria String
+  material String
+  userId  Int
+  user Usuario @relation(fields: [userId], references: [id])  
+
+ @@map("pranchas")
+}

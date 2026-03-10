@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body { 
+  font-family: 'Inter', sans-serif; 
+}
+
+/* Scrollbar customizada */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+
+/* Checkbox customizado do seu layout */
+input[type="checkbox"]:checked + div { background-color: #f4f4f5; border-color: #f4f4f5; }
+input[type="checkbox"]:checked + div iconify-icon { opacity: 1; }

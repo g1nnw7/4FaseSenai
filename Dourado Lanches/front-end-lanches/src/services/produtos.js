@@ -20,11 +20,11 @@ export async function getProdutos() {
 export async function adicionarProduto(produto) {  
     const response = await api.post("/produto", produto);  
     
-    // back retorna 201 quando cria  
+   let r = ";"
     if (response.status === 201) {  
-        return true;  
+        r = response.message; 
     }  
-    return false;  
+    return r;  
 }  
   
 /**  

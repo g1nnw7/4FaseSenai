@@ -98,8 +98,8 @@ const Produtos = () => {
       if (modo === "add") {  
         const ok = await adicionarProduto(payload);  
         if (!ok) {  
-          console.log("Não foi possível adicionar o produto");  
-          return;  
+          alert("Não foi possível adicionar o produto");  
+          return false;  
         }  
       } else {  
         // modo edit: precisa ter um produto selecionado  

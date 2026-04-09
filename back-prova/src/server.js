@@ -44,4 +44,4 @@ res.status(500).json({ error: 'Erro no servidor' });
 }
 });
 
-app.listen(3000, () => console.log('Back-end ON na porta 3000 (Simples e direto)'));
+app.listen(3000, () => console.log('Back-end ON na porta 3000'));

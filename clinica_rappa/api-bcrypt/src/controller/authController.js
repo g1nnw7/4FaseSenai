@@ -4,10 +4,10 @@ import jwt from "jsonwebtoken";
 
 export async function fazerLogin(req, res) {
     try {
-        const { email, senha } = req.body;
+        const { cpf, senha } = req.body;
 
         // 1. Busca o usuário no banco usando SQL
-        const result = await db.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+        const result = await db.query('SELECT * FROM usuarios WHERE cpf = $1', [cpf]);
         const usuario = result.rows[0]; // Pega o primeiro resultado
 
         if (!usuario) {
@@ -32,7 +32,7 @@ export async function fazerLogin(req, res) {
             token: token,
             usuario: {
                 id: usuario.id,
-                email: usuario.email,
+                cpf: usuario.cpf,
                 role: usuario.role
             }
         });

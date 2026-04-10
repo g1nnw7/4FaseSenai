@@ -3,11 +3,11 @@ import React, { useState, useEffect } from 'react';
 export default function RappaUI() {
   const [view, setView] = useState('auth'); 
   const [authMode, setAuthMode] = useState('login'); 
-  const [adminTab, setAdminTab] = useState('produtos'); 
+  const [adminTab, setAdminTab] = useState('consultas'); 
 
   // Estados de Auth
   const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
+  const [cpf, setCpf] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
@@ -15,20 +15,20 @@ export default function RappaUI() {
 
   // Estados de Dados
   const [usuarios, setUsuarios] = useState([]);
-  const [produtos, setProdutos] = useState([]);
+  const [consultas, setConsultas] = useState([]);
 
   // ==========================================
   // PAGINAÇÃO
   // ==========================================
   const ITEMS_POR_PAGINA = 9;
-  const [paginaAtualProdutos, setPaginaAtualProdutos] = useState(1);
+  const [paginaAtualConsultas, setPaginaAtualConsultas] = useState(1);
   const [paginaAtualUsuarios, setPaginaAtualUsuarios] = useState(1);
 
-  // Lógica para fatiar Produtos
-  const indexOfLastProduto = paginaAtualProdutos * ITEMS_POR_PAGINA;
-  const indexOfFirstProduto = indexOfLastProduto - ITEMS_POR_PAGINA;
-  const produtosPaginados = produtos.slice(indexOfFirstProduto, indexOfLastProduto);
-  const totalPaginasProdutos = Math.ceil(produtos.length / ITEMS_POR_PAGINA);
+  // Lógica para fatiar Consultas
+  const indexOfLastConsulta = paginaAtualConsultas * ITEMS_POR_PAGINA;
+  const indexOfFirstConsulta = indexOfLastConsulta - ITEMS_POR_PAGINA;
+  const consultasPaginados = consultas.slice(indexOfFirstConsulta, indexOfLastConsulta);
+  const totalPaginasConsultas = Math.ceil(consultas.length / ITEMS_POR_PAGINA);
 
   // Lógica para fatiar Usuários
   const indexOfLastUsuario = paginaAtualUsuarios * ITEMS_POR_PAGINA;
@@ -39,11 +39,11 @@ export default function RappaUI() {
   // ==========================================
   // ESTADOS DOS MODAIS (Formulários)
   // ==========================================
-  const [modalProdutoOpen, setModalProdutoOpen] = useState(false);
-  const [formProduto, setFormProduto] = useState({ id: null, nome: '', categoria: '', sku: '', status: 'Ativo', estoque: 0, preco: '' });
+  const [modalConsultaOpen, setModalConsultaOpen] = useState(false);
+  const [formConsulta, setFormConsulta] = useState({ id: null, nome: '', data_consulta: '', hora_consulta: '', status: 'Confirmada'});
 
   const [modalUsuarioOpen, setModalUsuarioOpen] = useState(false);
-  const [formUsuario, setFormUsuario] = useState({ id: null, nome: '', email: '', senha: '', role: 'USER' });
+  const [formUsuario, setFormUsuario] = useState({ id: null, nome: '', cpf: '', senha: '', role: 'USER' });
 
   // ==========================================
   // AUTH
@@ -55,13 +55,13 @@ export default function RappaUI() {
       const response = await fetch('http://localhost:3000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, senha }),
+        body: JSON.stringify({ cpf, senha }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Erro ao fazer login');
       
       localStorage.setItem('token', data.token);
-      setEmail(''); setSenha('');
+      setCpf(''); setSenha('');
       
       if (data.usuario.role === 'ADMIN') setView('admin');
       else setView('user');
@@ -79,14 +79,14 @@ export default function RappaUI() {
       const response = await fetch('http://localhost:3000/usuarios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, email, senha }),
+        body: JSON.stringify({ nome, cpf, senha }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Erro ao registrar');
       
       setSucesso('Conta criada com sucesso! Faça login.');
       setAuthMode('login');
-      setNome(''); setEmail(''); setSenha('');
+      setNome(''); setCpf(''); setSenha('');
     } catch (err) {
       setErro(err.message);
     } finally {
@@ -98,8 +98,8 @@ export default function RappaUI() {
     localStorage.removeItem('token');
     setView('auth'); 
     setUsuarios([]); 
-    setProdutos([]);
-    setPaginaAtualProdutos(1);
+    setConsultas([]);
+    setPaginaAtualConsultas(1);
     setPaginaAtualUsuarios(1);
   };
 
@@ -116,10 +116,10 @@ export default function RappaUI() {
         .then(data => setUsuarios(data))
         .catch(err => console.error("Erro ao carregar usuários:", err));
     } else {
-      fetch('http://localhost:3000/produtos', { headers })
+      fetch('http://localhost:3000/consultas', { headers })
         .then(res => res.json())
-        .then(data => setProdutos(data))
-        .catch(err => console.error("Erro ao carregar produtos:", err));
+        .then(data => setConsultas(data))
+        .catch(err => console.error("Erro ao carregar consultas:", err));
     }
   };
 
@@ -130,34 +130,34 @@ export default function RappaUI() {
   // ==========================================
   // AÇÕES DE PRODUTOS
   // ==========================================
-  const abrirModalProduto = (produto = null) => {
-    if (produto) setFormProduto(produto);
-    else setFormProduto({ id: null, nome: '', categoria: '', sku: '', status: 'Ativo', estoque: 0, preco: '' });
-    setModalProdutoOpen(true);
+  const abrirModalConsulta = (consulta = null) => {
+    if (consulta) setFormConsulta(consulta);
+    else setFormConsulta({  id: null, nome: '', data_consulta: '', hora_consulta: '', status: 'Confirmada' });
+    setModalConsultaOpen(true);
   };
 
-  const salvarProduto = async (e) => {
+  const salvarConsulta = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    const method = formProduto.id ? 'PUT' : 'POST';
-    const url = formProduto.id ? `http://localhost:3000/produtos/${formProduto.id}` : 'http://localhost:3000/produtos';
+    const method = formConsulta.id ? 'PUT' : 'POST';
+    const url = formConsulta.id ? `http://localhost:3000/consultas/${formConsulta.id}` : 'http://localhost:3000/consultas';
 
     try {
       await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(formProduto),
+        body: JSON.stringify(formConsulta),
       });
-      setModalProdutoOpen(false);
+      setModalConsultaOpen(false);
       carregarDados();
     } catch (error) {
-      alert("Erro ao salvar produto");
+      alert("Erro ao salvar consulta");
     }
   };
 
-  const deletarProduto = async (id) => {
-    if(!window.confirm("Excluir este produto?")) return;
-    await fetch(`http://localhost:3000/produtos/${id}`, { 
+  const deletarConsulta = async (id) => {
+    if(!window.confirm("Excluir este consulta?")) return;
+    await fetch(`http://localhost:3000/consultas/${id}`, { 
       method: 'DELETE', 
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } 
     });
@@ -197,9 +197,9 @@ export default function RappaUI() {
   // ==========================================
   const getStatusStyle = (status) => {
     switch(status) {
-      case 'Ativo': return { bg: 'bg-emerald-500', shadow: 'shadow-[0_0_8px_rgba(16,185,129,0.4)]', text: 'text-neutral-300' };
-      case 'Rascunho': return { bg: 'bg-amber-500', shadow: 'shadow-[0_0_8px_rgba(245,158,11,0.4)]', text: 'text-neutral-300' };
-      case 'Esgotado': return { bg: 'bg-red-500', shadow: 'shadow-[0_0_8px_rgba(239,68,68,0.4)]', text: 'text-red-400' };
+      case 'Confirmado': return { bg: 'bg-emerald-500', shadow: 'shadow-[0_0_8px_rgba(16,185,129,0.4)]', text: 'text-neutral-300' };
+      case 'Pendente': return { bg: 'bg-amber-500', shadow: 'shadow-[0_0_8px_rgba(245,158,11,0.4)]', text: 'text-neutral-300' };
+      case 'Cancelada': return { bg: 'bg-red-500', shadow: 'shadow-[0_0_8px_rgba(239,68,68,0.4)]', text: 'text-red-400' };
       default: return { bg: 'bg-neutral-500', shadow: '', text: 'text-neutral-300' };
     }
   };
@@ -223,7 +223,7 @@ export default function RappaUI() {
               {authMode === 'register' && (
                 <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} required placeholder="Nome Completo" className="w-full bg-neutral-900/50 border border-neutral-800 rounded-lg py-2.5 px-4 text-sm text-neutral-200 focus:outline-none focus:border-neutral-600 transition-all" />
               )}
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="Email" className="w-full bg-neutral-900/50 border border-neutral-800 rounded-lg py-2.5 px-4 text-sm text-neutral-200 focus:outline-none focus:border-neutral-600 transition-all" />
+              <input type="cpf" value={cpf} onChange={(e) => setCpf(e.target.value)} required placeholder="Cpf" className="w-full bg-neutral-900/50 border border-neutral-800 rounded-lg py-2.5 px-4 text-sm text-neutral-200 focus:outline-none focus:border-neutral-600 transition-all" />
               <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required placeholder="Senha" className="w-full bg-neutral-900/50 border border-neutral-800 rounded-lg py-2.5 px-4 text-sm text-neutral-200 focus:outline-none focus:border-neutral-600 transition-all" />
               
               <button type="submit" disabled={loading} className="w-full bg-neutral-100 text-neutral-900 py-2.5 rounded-lg text-sm font-medium hover:bg-white transition-all mt-4 disabled:opacity-50">
@@ -247,8 +247,8 @@ export default function RappaUI() {
               <span className="text-lg font-semibold tracking-tighter text-neutral-100">RAPPA</span>
             </div>
             <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
-              <button onClick={() => { setAdminTab('produtos'); setPaginaAtualProdutos(1); }} className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${adminTab === 'produtos' ? 'bg-neutral-800/60 text-neutral-100' : 'text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/40'}`}>
-                <iconify-icon icon="solar:box-linear" stroke-width="1.5" class="text-lg"></iconify-icon> Produtos
+              <button onClick={() => { setAdminTab('consultas'); setPaginaAtualConsultas(1); }} className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${adminTab === 'consultas' ? 'bg-neutral-800/60 text-neutral-100' : 'text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/40'}`}>
+                <iconify-icon icon="solar:box-linear" stroke-width="1.5" class="text-lg"></iconify-icon> Consultas
               </button>
               <button onClick={() => { setAdminTab('usuarios'); setPaginaAtualUsuarios(1); }} className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${adminTab === 'usuarios' ? 'bg-neutral-800/60 text-neutral-100' : 'text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/40'}`}>
                 <iconify-icon icon="solar:users-group-rounded-linear" stroke-width="1.5" class="text-lg"></iconify-icon> Usuários
@@ -270,14 +270,14 @@ export default function RappaUI() {
               <div className="max-w-6xl mx-auto space-y-6">
                 
                 {/* ================= ABA PRODUTOS ================= */}
-                {adminTab === 'produtos' && (
+                {adminTab === 'consultas' && (
                   <>
                     <div className="flex justify-between items-end gap-4 mb-6">
                       <div>
-                        <h1 className="text-2xl font-semibold text-neutral-100">Produtos</h1>
-                        <p className="text-sm text-neutral-500 mt-1">Gerencie seu catálogo de produtos</p>
+                        <h1 className="text-2xl font-semibold text-neutral-100">Consultas</h1>
+                        <p className="text-sm text-neutral-500 mt-1">Gerencie seu catálogo de consultas</p>
                       </div>
-                      <button onClick={() => abrirModalProduto()} className="bg-neutral-100 text-neutral-900 hover:bg-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2">
+                      <button onClick={() => abrirModalConsulta()} className="bg-neutral-100 text-neutral-900 hover:bg-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2">
                         <iconify-icon icon="solar:add-circle-linear" class="text-lg"></iconify-icon> Adicionar
                       </button>
                     </div>
@@ -286,34 +286,34 @@ export default function RappaUI() {
                       <table className="w-full text-left">
                         <thead>
                           <tr className="border-b border-neutral-800/60 bg-neutral-900/40">
-                            <th className="py-3 px-6 text-xs text-neutral-400 uppercase">Produto</th>
+                            <th className="py-3 px-6 text-xs text-neutral-400 uppercase">Consulta</th>
                             <th className="py-3 px-4 text-xs text-neutral-400 uppercase">Status</th>
-                            <th className="py-3 px-4 text-xs text-neutral-400 uppercase">Estoque</th>
+                            <th className="py-3 px-4 text-xs text-neutral-400 uppercase">Hora Consulta</th>
                             <th className="py-3 px-4 text-xs text-neutral-400 uppercase">Preço</th>
                             <th className="py-3 px-4 text-xs text-neutral-400 uppercase text-right">Ações</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-neutral-800/60">
-                          {produtosPaginados.map((prod) => {
+                          {consultasPaginados.map((prod) => {
                             const style = getStatusStyle(prod.status);
                             return (
                               <tr key={prod.id} className="hover:bg-neutral-800/30">
                                 <td className="py-3.5 px-6">
                                   <div className="text-sm font-medium text-neutral-200">{prod.nome}</div>
-                                  <div className="text-xs text-neutral-500">{prod.categoria} · {prod.sku}</div>
+                                  <div className="text-xs text-neutral-500">{prod.motivo} · {prod.data_consulta}</div>
                                 </td>
                                 <td className="py-3.5 px-4">
                                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium border border-neutral-700/80 bg-neutral-800/50 flex items-center gap-1 w-max ${style.text}`}>
                                     <span className={`w-1.5 h-1.5 rounded-full ${style.bg}`}></span> {prod.status}
                                   </span>
                                 </td>
-                                <td className="py-3.5 px-4 text-sm text-neutral-400">{prod.estoque} unid.</td>
+                                <td className="py-3.5 px-4 text-sm text-neutral-400">{prod.hora_consulta} unid.</td>
                                 <td className="py-3.5 px-4 text-sm text-neutral-300 font-medium">
                                   {Number(prod.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                 </td>
                                 <td className="py-3.5 px-4 text-right">
-                                  <button onClick={() => abrirModalProduto(prod)} className="p-1.5 text-neutral-400 hover:text-white mr-2"><iconify-icon icon="solar:pen-linear" class="text-base"></iconify-icon></button>
-                                  <button onClick={() => deletarProduto(prod.id)} className="p-1.5 text-neutral-400 hover:text-red-400"><iconify-icon icon="solar:trash-bin-trash-linear" class="text-base"></iconify-icon></button>
+                                  <button onClick={() => abrirModalConsulta(prod)} className="p-1.5 text-neutral-400 hover:text-white mr-2"><iconify-icon icon="solar:pen-linear" class="text-base"></iconify-icon></button>
+                                  <button onClick={() => deletarConsulta(prod.id)} className="p-1.5 text-neutral-400 hover:text-red-400"><iconify-icon icon="solar:trash-bin-trash-linear" class="text-base"></iconify-icon></button>
                                 </td>
                               </tr>
                             )
@@ -323,14 +323,14 @@ export default function RappaUI() {
                     </div>
 
                     {/* PAGINAÇÃO DE PRODUTOS */}
-                    {totalPaginasProdutos > 1 && (
+                    {totalPaginasConsultas > 1 && (
                       <div className="flex justify-center items-center gap-2 mt-6">
-                        {Array.from({ length: totalPaginasProdutos }, (_, i) => i + 1).map(numero => (
+                        {Array.from({ length: totalPaginasConsultas }, (_, i) => i + 1).map(numero => (
                           <button
                             key={numero}
-                            onClick={() => setPaginaAtualProdutos(numero)}
+                            onClick={() => setPaginaAtualConsultas(numero)}
                             className={`w-8 h-8 rounded flex items-center justify-center text-sm font-medium transition-colors ${
-                              paginaAtualProdutos === numero 
+                              paginaAtualConsultas === numero 
                                 ? 'bg-neutral-200 text-black' 
                                 : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white'
                             }`}
@@ -356,7 +356,7 @@ export default function RappaUI() {
                          <thead className="bg-neutral-900/40 border-b border-neutral-800/60">
                            <tr>
                              <th className="px-6 py-3 text-xs text-neutral-400 uppercase">Nome</th>
-                             <th className="px-6 py-3 text-xs text-neutral-400 uppercase">Email</th>
+                             <th className="px-6 py-3 text-xs text-neutral-400 uppercase">Cpf</th>
                              <th className="px-6 py-3 text-xs text-neutral-400 uppercase">Cargo</th>
                              <th className="px-6 py-3 text-xs text-neutral-400 uppercase text-right">Ações</th>
                            </tr>
@@ -365,7 +365,7 @@ export default function RappaUI() {
                            {usuariosPaginados.map(u => (
                              <tr key={u.id} className="hover:bg-neutral-800/30">
                                <td className="px-6 py-4 text-neutral-200">{u.nome}</td>
-                               <td className="px-6 py-4 text-neutral-400">{u.email}</td>
+                               <td className="px-6 py-4 text-neutral-400">{u.cpf}</td>
                                <td className="px-6 py-4">
                                  {u.role === 'ADMIN' ? <span className="text-emerald-400 text-xs border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 rounded">Admin</span> : <span className="text-neutral-500 text-xs border border-neutral-700 bg-neutral-800/50 px-2 py-1 rounded">User</span>}
                                </td>
@@ -407,45 +407,45 @@ export default function RappaUI() {
       )}
 
       {/* ================= MODAL DE PRODUTO ================= */}
-      {modalProdutoOpen && (
+      {modalConsultaOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#121212] border border-neutral-800 w-full max-w-md rounded-xl p-6 shadow-2xl">
-            <h2 className="text-xl font-semibold text-white mb-6">{formProduto.id ? 'Editar Produto' : 'Novo Produto'}</h2>
-            <form onSubmit={salvarProduto} className="space-y-4">
+            <h2 className="text-xl font-semibold text-white mb-6">{formConsulta.id ? 'Editar Consulta' : 'Novo Consulta'}</h2>
+            <form onSubmit={salvarConsulta} className="space-y-4">
               <div>
-                <label className="text-xs text-neutral-500 mb-1 block">Nome do Produto</label>
-                <input type="text" value={formProduto.nome} onChange={e => setFormProduto({...formProduto, nome: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors" required />
+                <label className="text-xs text-neutral-500 mb-1 block">Nome do Paciente</label>
+                <input type="text" value={formConsulta.nome} onChange={e => setFormConsulta({...formConsulta, nome: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors" required />
               </div>
               <div className="flex gap-4">
                 <div className="w-1/2">
-                  <label className="text-xs text-neutral-500 mb-1 block">Categoria</label>
-                  <input type="text" value={formProduto.categoria} onChange={e => setFormProduto({...formProduto, categoria: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors" required />
+                  <label className="text-xs text-neutral-500 mb-1 block">Motivo</label>
+                  <input type="text" value={formConsulta.motivo} onChange={e => setFormConsulta({...formConsulta, motivo: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors" required />
                 </div>
                 <div className="w-1/2">
-                  <label className="text-xs text-neutral-500 mb-1 block">SKU</label>
-                  <input type="text" value={formProduto.sku} onChange={e => setFormProduto({...formProduto, sku: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors" required />
+                  <label className="text-xs text-neutral-500 mb-1 block">Data Consulta</label>
+                  <input type="date" value={formConsulta.data_consulta} onChange={e => setFormConsulta({...formConsulta, data_consulta: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors" required />
                 </div>
               </div>
               <div className="flex gap-4">
                 <div className="w-1/3">
                   <label className="text-xs text-neutral-500 mb-1 block">Status</label>
-                  <select value={formProduto.status} onChange={e => setFormProduto({...formProduto, status: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors">
-                    <option value="Ativo">Ativo</option>
-                    <option value="Rascunho">Rascunho</option>
-                    <option value="Esgotado">Esgotado</option>
+                  <select value={formConsulta.status} onChange={e => setFormConsulta({...formConsulta, status: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors">
+                    <option value="Confirmado">Confirmado</option>
+                    <option value="Pendente">Pendente</option>
+                    <option value="Cancelada">Cancelada</option>
                   </select>
                 </div>
                 <div className="w-1/3">
-                  <label className="text-xs text-neutral-500 mb-1 block">Estoque</label>
-                  <input type="number" value={formProduto.estoque} onChange={e => setFormProduto({...formProduto, estoque: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors" required />
+                  <label className="text-xs text-neutral-500 mb-1 block">Hora Consulta</label>
+                  <input type="time" value={formConsulta.hora_consulta} onChange={e => setFormConsulta({...formConsulta, hora_consulta: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors" required />
                 </div>
                 <div className="w-1/3">
                   <label className="text-xs text-neutral-500 mb-1 block">Preço (R$)</label>
-                  <input type="number" step="0.01" value={formProduto.preco} onChange={e => setFormProduto({...formProduto, preco: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors" required />
+                  <input type="number" step="0.01" value={formConsulta.preco} onChange={e => setFormConsulta({...formConsulta, preco: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors" required />
                 </div>
               </div>
               <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-neutral-800">
-                <button type="button" onClick={() => setModalProdutoOpen(false)} className="px-4 py-2 text-sm text-neutral-400 hover:text-white transition-colors">Cancelar</button>
+                <button type="button" onClick={() => setModalConsultaOpen(false)} className="px-4 py-2 text-sm text-neutral-400 hover:text-white transition-colors">Cancelar</button>
                 <button type="submit" className="px-6 py-2 bg-neutral-100 text-black text-sm font-medium rounded hover:bg-white transition-colors">Salvar</button>
               </div>
             </form>
@@ -464,8 +464,8 @@ export default function RappaUI() {
                 <input type="text" value={formUsuario.nome} onChange={e => setFormUsuario({...formUsuario, nome: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors" required />
               </div>
               <div>
-                <label className="text-xs text-neutral-500 mb-1 block">Email de Acesso</label>
-                <input type="email" value={formUsuario.email} onChange={e => setFormUsuario({...formUsuario, email: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors" required />
+                <label className="text-xs text-neutral-500 mb-1 block">Cpf de Acesso</label>
+                <input type="cpf" value={formUsuario.cpf} onChange={e => setFormUsuario({...formUsuario, cpf: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded py-2.5 px-3 text-sm text-white focus:outline-none focus:border-neutral-600 transition-colors" required />
               </div>
               <div>
                 <label className="text-xs text-neutral-500 mb-1 block">Nível de Acesso (Role)</label>

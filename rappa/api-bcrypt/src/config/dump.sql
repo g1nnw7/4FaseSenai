@@ -15,3 +15,8 @@ CREATE TABLE usuarios (
     senha VARCHAR(255) NOT NULL,
     role VARCHAR(50) DEFAULT 'USER'
 );
+
+
+PORT=3000
+JWT_SECRET="MATHIAS123"
+DATABASE_URL="postgresql://postgres:senai@localhost:5432/rappa"

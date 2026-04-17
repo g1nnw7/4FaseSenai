@@ -1,3 +1,21 @@
+PORT=3000
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=root
+DB_NAME=rappa_clinic
+JWT_SECRET=sua_chave_secreta_super_segura_aqui_rappa_clinic
+
+JWT_EXPIRES_IN=1d
+
+BCRYPT_SALT_ROUNDS=10
+
+
+
+
+
+
+
 -- ============================================================
 -- RAPPA CLINIC - Schema do Banco de Dados
 -- ============================================================

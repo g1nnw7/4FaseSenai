@@ -73,3 +73,43 @@ CREATE TRIGGER trigger_consultas_atualizado_em
     BEFORE UPDATE ON consultas
     FOR EACH ROW
     EXECUTE FUNCTION update_atualizado_em();
+
+ -- ============================================================
+-- DADOS INICIAIS (Seeds) - Rappa Clinic
+-- ============================================================
+
+-- 1. Ativa a extensão de criptografia do PostgreSQL (para suportar bcrypt)
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- 2. Limpa as tabelas e reinicia os IDs
+TRUNCATE TABLE consultas, usuarios RESTART IDENTITY CASCADE;
+
+-- 3. Inserção de Usuários gerando o hash bcrypt real na hora com o pgcrypto
+INSERT INTO usuarios (nome, email, senha, role, status, especialidade) VALUES
+-- DOCTOR (ID 1) - Senha: admin123
+('Dr. Rappa Principal', 'doctor@gmail.com', crypt('admin123', gen_salt('bf')), 'DOCTOR', 'disponivel', 'Clínica Geral'),
+('Dr. Mathias', 'mathias@gmail.com', crypt('admin123', gen_salt('bf')), 'DOCTOR', 'disponivel', 'Clínica Geral'),
+('Dr. Matheus', 'matheus@gmail.com', crypt('admin123', gen_salt('bf')), 'DOCTOR', 'disponivel', 'Clínica Geral'),
+
+-- USERS (IDs 2, 3 e 4) - Senha: senha123
+('Carlos Eduardo', 'carlos@email.com', crypt('senha123', gen_salt('bf')), 'USER', NULL, NULL),
+('Mariana Lima', 'mariana@email.com', crypt('senha123', gen_salt('bf')), 'USER', NULL, NULL),
+('Felipe Souza', 'felipe@email.com', crypt('senha123', gen_salt('bf')), 'USER', NULL, NULL);
+
+-- ============================================================
+-- INSERÇÃO DE CONSULTAS
+-- ============================================================
+
+-- Associando os pacientes (IDs 2, 3 e 4) ao médico (ID 1)
+INSERT INTO consultas (paciente_id, medico_id, data_hora, duracao_minutos, motivo, status, observacoes) VALUES
+-- Agendada no futuro (Carlos)
+(2, 1, NOW() + INTERVAL '2 days', 30, 'Checkup de rotina e exames de sangue', 'agendada', 'Paciente de primeira viagem na clínica.'),
+
+-- Concluída no passado (Mariana)
+(3, 1, NOW() - INTERVAL '5 days', 45, 'Retorno cardiológico', 'concluida', 'Exames apresentaram melhora no colesterol.'),
+
+-- Cancelada (Felipe)
+(4, 1, NOW() + INTERVAL '1 day', 30, 'Sintomas gripais fortes', 'cancelada', 'Paciente avisou que não poderia comparecer devido a um imprevisto no trabalho.'),
+
+-- Novo retorno agendado (Carlos)
+(2, 1, NOW() + INTERVAL '15 days', 30, 'Apresentação dos resultados de exame', 'agendada', 'Trazer todos os laudos impressos.');

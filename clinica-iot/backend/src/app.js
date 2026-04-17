@@ -1,9 +1,9 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { authRouter } from './src/routes/auth.js';
-import { usuarioRouter } from './src/routes/usuario.js';
-import { consultaRouter } from './src/routes/consulta.js';
+import { authRouter } from './routes/auth.js';
+import { usuarioRouter } from './routes/usuario.js';
+import { consultaRouter } from './routes/consulta.js';
 
 export const app = express();
 

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../../components/shared/Navbar';
-import { useAuth } from '../../context/AuthContext';
-import api from '../../services/api';
-import StatusBadge from '../../components/shared/StatusBadge';
+import Navbar from '../components/Navbar.jsx';
+import { useAuth } from '../contexts/AuthContexts';
+import api from '../api.js';
+import StatusBadge from '../components/StatusBadge';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 

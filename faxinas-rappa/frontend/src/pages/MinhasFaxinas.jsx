@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../../components/shared/Navbar';
-import FaxinaCard from '../../components/shared/FaxinaCard';
-import api from '../../services/api';
+import Navbar from '../components/Navbar';
+import FaxinaCard from '../components/FaxinaCard';
+import api from '../api.js';
 import toast from 'react-hot-toast';
 
 export default function MinhasFaxinas() {

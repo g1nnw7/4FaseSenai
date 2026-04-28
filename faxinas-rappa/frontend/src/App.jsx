@@ -1,23 +1,23 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContexts';
 
 // Pages - Auth
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
 // Pages - User
-import UserDashboard from './pages/user/UserDashboard';
-import AgendarFaxina from './pages/user/AgendarFaxina';
-import MinhasFaxinas from './pages/user/MinhasFaxinas';
+import UserDashboard from './pages/UserDashboard';
+import AgendarFaxina from './pages/AgendarFaxina';
+import MinhasFaxinas from './pages/MinhasFaxinas';
 
 // Pages - Admin
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminFaxinas from './pages/admin/AdminFaxinas';
-import AdminCLTs from './pages/admin/AdminCLTs';
-import AdminAdmins from './pages/admin/AdminAdmins';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminFaxinas from './pages/AdminFaxinas';
+import AdminCLTs from './pages/AdminCLT';
+import AdminAdmins from './pages/AdminAdmins';
 
 // Pages - CLT
-import CltDashboard from './pages/admin/CltDashboard';
+import CltDashboard from './pages/CltDashboard';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute';

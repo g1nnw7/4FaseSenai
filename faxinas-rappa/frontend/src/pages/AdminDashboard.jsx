@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import AdminSidebar from '../components/AdminSidebar.jsx';
-import StatusBadge from '../components/StatusBadge.jsx';
+import AdminSidebar from '../components/AdminSidebar';
+import StatusBadge from '../components/StatusBadge';
 import api from '../api.js';
 
 export default function AdminDashboard() {

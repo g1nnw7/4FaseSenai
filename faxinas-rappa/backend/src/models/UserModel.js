@@ -62,7 +62,9 @@ class UserModel {
   }
 
   static async create({ name, email, password, role = 'USER', phone }) {
-    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const hashedPassword = await bcrypt.hash(password, parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10);
+
     const client = await pool.connect();
 
     try {

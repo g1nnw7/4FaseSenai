@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../../components/shared/Navbar';
-import api from '../../services/api';
+import Navbar from '../components/Navbar';
+import api from '../api.js';
 import toast from 'react-hot-toast';
-import StatusBadge from '../../components/shared/StatusBadge';
+import StatusBadge from '../components/StatusBadge';
 
 const HOURS = ['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
 

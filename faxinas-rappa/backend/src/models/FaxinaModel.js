@@ -67,42 +67,38 @@ class FaxinaModel {
     return this.findAll({ cltId });
   }
 
-  // Check if CLT already has a faxina at given date/time
-  static async checkCltConflict(cltId, scheduledDate, scheduledTime, excludeId = null) {
+  // Verifica sobreposicao de horario considerando duracao
+  // Duas faxinas se sobrepoe se: novaInicio < existFim E novaFim > existInicio
+  static async checkCltConflict(cltId, scheduledDate, scheduledTime, durationHours, excludeId = null) {
     let query = `
       SELECT id FROM faxinas
       WHERE clt_id = $1
         AND scheduled_date = $2
-        AND scheduled_time = $3
         AND status NOT IN ('cancelada', 'concluida')
+        AND (
+          scheduled_time < ($3::time + ($4::int || ' hours')::interval)
+          AND (scheduled_time + (duration_hours || ' hours')::interval) > $3::time
+        )
     `;
-    const params = [cltId, scheduledDate, scheduledTime];
-
-    if (excludeId) {
-      query += ` AND id != $4`;
-      params.push(excludeId);
-    }
-
+    const params = [cltId, scheduledDate, scheduledTime, durationHours];
+    if (excludeId) { query += ` AND id != $5`; params.push(excludeId); }
     const result = await pool.query(query, params);
     return result.rows.length > 0;
   }
 
-  // Check if USER already has a faxina at given date/time
-  static async checkUserConflict(userId, scheduledDate, scheduledTime, excludeId = null) {
+  static async checkUserConflict(userId, scheduledDate, scheduledTime, durationHours, excludeId = null) {
     let query = `
       SELECT id FROM faxinas
       WHERE user_id = $1
         AND scheduled_date = $2
-        AND scheduled_time = $3
         AND status NOT IN ('cancelada', 'concluida')
+        AND (
+          scheduled_time < ($3::time + ($4::int || ' hours')::interval)
+          AND (scheduled_time + (duration_hours || ' hours')::interval) > $3::time
+        )
     `;
-    const params = [userId, scheduledDate, scheduledTime];
-
-    if (excludeId) {
-      query += ` AND id != $4`;
-      params.push(excludeId);
-    }
-
+    const params = [userId, scheduledDate, scheduledTime, durationHours];
+    if (excludeId) { query += ` AND id != $5`; params.push(excludeId); }
     const result = await pool.query(query, params);
     return result.rows.length > 0;
   }
@@ -131,7 +127,6 @@ class FaxinaModel {
     }
 
     if (updates.length === 0) return null;
-
     updates.push(`updated_at = NOW()`);
     params.push(id);
 
@@ -144,19 +139,23 @@ class FaxinaModel {
 
   static async cancel(id) {
     const result = await pool.query(
-      `UPDATE faxinas SET status = 'cancelada', updated_at = NOW()
-       WHERE id = $1 RETURNING *`,
+      `UPDATE faxinas SET status = 'cancelada', updated_at = NOW() WHERE id = $1 RETURNING *`,
       [id]
     );
     return result.rows[0] || null;
   }
 
-  // Can cancel if more than 24h before scheduled
-  static canCancel(scheduledDate, scheduledTime) {
-    const scheduledDateTime = new Date(`${scheduledDate}T${scheduledTime}`);
-    const now = new Date();
-    const diffHours = (scheduledDateTime - now) / (1000 * 60 * 60);
-    return diffHours > 24;
+  // Usa o Postgres para comparar — sem bug de timezone no Node
+  // Retorna true se a faxina ainda pode ser cancelada (faltam mais de 24h)
+  static async canCancel(faxinaId) {
+    const result = await pool.query(
+      `SELECT (
+         (scheduled_date + scheduled_time) > (NOW() + INTERVAL '24 hours')
+       ) AS can_cancel
+       FROM faxinas WHERE id = $1`,
+      [faxinaId]
+    );
+    return result.rows[0]?.can_cancel === true;
   }
 }
 

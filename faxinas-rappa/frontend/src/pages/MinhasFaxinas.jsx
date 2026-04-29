@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/Navbar.jsx';
 import FaxinaCard from '../components/FaxinaCard';
 import api from '../api.js';
 import toast from 'react-hot-toast';
@@ -31,12 +31,9 @@ export default function MinhasFaxinas() {
     }
   };
 
-  const canCancel = (faxina) => {
-    if (faxina.status !== 'agendada') return false;
-    const scheduled = new Date(`${faxina.scheduled_date?.split('T')[0]}T${faxina.scheduled_time}`);
-    const diff = (scheduled - new Date()) / (1000 * 60 * 60);
-    return diff > 24;
-  };
+  // Só mostra o botão cancelar se status = agendada
+  // A regra das 24h é validada pelo backend — aqui só exibe o botão
+  const canCancel = (faxina) => faxina.status === 'agendada';
 
   const filtered = filter === 'todas' ? faxinas : faxinas.filter(f => f.status === filter);
 

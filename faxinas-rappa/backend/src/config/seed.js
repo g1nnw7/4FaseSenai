@@ -112,8 +112,7 @@ const seed = async () => {
     console.log('│ ADMIN    │ admin@rappa.com       │ admin123 │');
     console.log('│ CLT      │ maria@rappa.com       │ clt123   │');
     console.log('│ CLT      │ joao@rappa.com        │ clt123   │');
-    console.log('│ USER     │ carlos@email.com      │ 
-        user123  │');
+    console.log('│ USER     │ carlos@email.com      │ user123  │');
     console.log('└──────────┴──────────────────────┴──────────┘');
     console.log('\n📋 Faxinas do Carlos: agendada | em_andamento | concluida | cancelada\n');
 

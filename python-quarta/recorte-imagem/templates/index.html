@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Recorte de Imagem</title>
+</head>
+<body>
+    <h1>Projeto de Recorte de Imagem (Flask + OpenCV)</h1>
+
+    <form id="formRecorte">
+        <div>
+            <label>Imagem: </label>
+            <input type="file" name="imagem" accept="image/*" required>
+        </div>
+        
+        <div>
+            <label>X: </label>
+            <input type="number" name="x" required>
+        </div>
+        
+        <div>
+            <label>Y:</label>
+            <input type="number" name="y" required>
+        </div>
+        
+        <div>
+            <label>Largura:</label>
+            <input type="number" name="w" required>
+        </div>
+        
+        <div>
+            <label>Altura: </label>
+            <input type="number" name="h" required>
+        </div>
+        
+        <div>
+            <label>Nome do arquivo de saída: </label>
+            <input type="text" name="nome_saida" required>
+        </div>
+        
+        <br>
+        <button type="submit">Enviar para recorte</button>
+    </form>
+
+    <p id="resultado"></p>
+
+    <script>
+        const form = document.getElementById("formRecorte");
+        const resultado = document.getElementById("resultado");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            resultado.textContent = "Processando...";
+
+            const dados = new FormData(form);
+            
+            try {
+                const resposta = await fetch("/recortar", {
+                    method: "POST",
+                    body: dados
+                });
+
+                const json = await resposta.json();
+                
+                if (resposta.ok) {
+                    resultado.textContent = `Sucesso: ${json.mensagem}. Verifique a pasta: ${json.arquivo}`;
+                } else {
+                    resultado.textContent = `Erro: ${json.erro}`;
+                }
+            } catch (error) {
+                resultado.textContent = "Erro na comunicação com o servidor.";
+            }
+        });
+    </script>
+</body>
+</html>
